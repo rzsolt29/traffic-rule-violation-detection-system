@@ -1,3 +1,6 @@
+gtFine_trainvaltest/
+gtFine_trainvaltest.zip
+leftImg8bit_trainvaltest.zip
 random_motorway.mp4
 test.mp4
 tests.py
