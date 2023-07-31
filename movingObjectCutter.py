@@ -18,7 +18,7 @@ for frameOI in range(40):
     x = 650 / frame.shape[0]
     y = x
     frame = cv2.resize(frame, None, None, x, y, cv2.INTER_CUBIC)
-    cv2.imshow("frame",frame)
+    cv2.imshow("frame", frame)
 
     difference = np.copy(frame)
 
@@ -31,6 +31,9 @@ for frameOI in range(40):
 
         frames.pop(0)
         frames.append(frame)
+    else:
+        raise Exception("Internal logic error")
+
 
 video.release()
 cv2.destroyAllWindows()
