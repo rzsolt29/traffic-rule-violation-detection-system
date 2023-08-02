@@ -26,14 +26,28 @@ for frameOI in range(40):
         frames.append(frame)
     elif len(frames) == 2:
         cv2.absdiff(frames[0], frames[1], difference)
-        cv2.imshow("diff", difference)
+
+        blurred = cv2.GaussianBlur(difference, (11, 11), 0)
+
+        blurred = cv2.cvtColor(blurred, cv2.COLOR_BGR2GRAY)
+
+        ret, tframe = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        cv2.imshow("thresholded", tframe)
+
+        sample_frame = frames[1]
+        (cnts, _) = cv2.findContours(tframe.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        for cnt in cnts:
+            x, y, w, h = cv2.boundingRect(cnt)
+            if y > 200:  # Disregard item that are the top of the picture
+                cv2.rectangle(sample_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        cv2.imshow("sample_frame", sample_frame)
+
         cv2.waitKey(0)
 
         frames.pop(0)
         frames.append(frame)
     else:
         raise Exception("Internal logic error")
-
 
 video.release()
 cv2.destroyAllWindows()
