@@ -39,9 +39,9 @@ for i, c in enumerate(contours):
     area = cv2.contourArea(c)
     areaArray.append(area)
 
-sorteddata = sorted(zip(areaArray, contours), key=lambda x: x[0], reverse=True)
+sortedData = sorted(zip(areaArray, contours), key=lambda x: x[0], reverse=True)
 
-biggests = [sorteddata[0][1], sorteddata[1][1]]
+biggests = [sortedData[0][1], sortedData[1][1]]
 
 x, y, w, h = cv2.boundingRect(biggests[0])
 cv2.drawContours(close, biggests[0], -1, (255, 0, 0), 1)
@@ -59,7 +59,14 @@ for i in range(81, close.shape[0] - 1):
         if close[i][j] == 255 and close[i][j+1] != 255:
             afterFistContour = True
             contourCounter += 1
-        elif close[i][j] == 0 and afterFistContour and contourCounter<3:
+        elif close[i][j] == 0 and afterFistContour and contourCounter < 3:
+            after[i][j][0] = 0
+            after[i][j][1] = 0
+            after[i][j][2] = 255
+            background[i][j][0] = 0
+            background[i][j][1] = 0
+            background[i][j][2] = 255
+        elif after[i-1][j][0] == 0 and after[i][j][1] == 0 and after[i-1][j][2] == 255:
             after[i][j][0] = 0
             after[i][j][1] = 0
             after[i][j][2] = 255
@@ -69,26 +76,36 @@ for i in range(81, close.shape[0] - 1):
 cv2.imshow("background", background)
 
 
-"""counter = 0
-for i in range(close.shape[0] - 1):
-    counter=0
-    for j in range(close.shape[1] - 1):
-        if close[i][j] == 255 :
-            counter += 1
-        elif counter>1 and counter<3:
+for i in range(81, after.shape[0] - 1):
+    for j in range(after.shape[1] - 1):
+        if not(after[i][j][0] == 0 and after[i][j][1] == 0 and after[i][j][2] == 255):
             after[i][j][0] = 0
             after[i][j][1] = 0
-            after[i][j][2] = 255
-        else:
-            after[i][j][0] = 255
-            after[i][j][1] = 0
-            after[i][j][2] = 0"""
+            after[i][j][2] = 0
+
+kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+after = cv2.morphologyEx(after, cv2.MORPH_CLOSE, kernel, iterations=4)
+
+"""# makes blue the second half of the road
+for i in range(81, after.shape[0] - 1):
+    counter = 0
+    for j in range(after.shape[1] - 1):
+        if after[i][j][0] == 0 and after[i][j][1] == 0 and after[i][j][2] == 255:
+            counter += 1
+        elif counter > 0:
+            idx = round(j - 1 / counter / 2)
+            after[i][idx][0] = 255
+            after[i][idx][2] = 0
+            after[i][idx-1][0] = 255
+            after[i][idx-1][2] = 0
+            after[i][idx + 1][0] = 255
+            after[i][idx + 1][2] = 0"""
 
 
 cv2.imshow("after", after)
 
 ###########
-
+# trying skeletonization
 """img = thresh.copy()
 
 size = np.size(img)
@@ -119,7 +136,7 @@ for c in cnts:
     if area < 5500:
         cv2.drawContours(thresh, [c], -1, (0,0,0), -1)
 
-# Morph close and invert image
+# Morph close
 kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
 close = cv2.morphologyEx(skel, cv2.MORPH_CLOSE, kernel, iterations=2)
 
@@ -127,7 +144,7 @@ close = cv2.morphologyEx(skel, cv2.MORPH_CLOSE, kernel, iterations=2)
 cv2.imshow('close', close)
 
 
-# Canny edges detection
+# Canny edges detection and morph close 
 edges = cv2.Canny(thresh, 100, 200)
 cv2.imshow("edges", edges)
 closedEdges = cv2.morphologyEx(edges, cv2.MORPH_CLOSE, kernel, iterations=2)
