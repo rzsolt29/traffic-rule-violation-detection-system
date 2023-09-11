@@ -78,8 +78,6 @@ for i in range(81, after.shape[0] - 1):
 
 after = cv2.cvtColor(after, cv2.COLOR_BGR2GRAY)
 
-after2 = after.copy
-
 laneChange = []
 lengthOfLastLane = 0
 lengthOfCurrentLane = 0
@@ -88,8 +86,6 @@ for i in range(81, after.shape[0] - 1):
     lengthOfCurrentLane = 0
     colorChangedOnce = False
     firstLaneReady = False
-    if i == 364:
-        print("")
     for j in range(after.shape[1] - 2):
 
         if not colorChangedOnce and after[i][j] != after[i][j+1]:
