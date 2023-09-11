@@ -78,10 +78,18 @@ for i in range(81, after.shape[0] - 1):
 
 after = cv2.cvtColor(after, cv2.COLOR_BGR2GRAY)
 
+after2 = after.copy
+
 laneChange = []
+lengthOfLastLane = 0
+lengthOfCurrentLane = 0
 for i in range(81, after.shape[0] - 1):
+    lengthOfLastLane = lengthOfCurrentLane
+    lengthOfCurrentLane = 0
     colorChangedOnce = False
     firstLaneReady = False
+    if i == 364:
+        print("")
     for j in range(after.shape[1] - 2):
 
         if not colorChangedOnce and after[i][j] != after[i][j+1]:
@@ -90,35 +98,11 @@ for i in range(81, after.shape[0] - 1):
             firstLaneReady = True
             laneChange.append(j)
             break
+        elif lengthOfLastLane != 0 and lengthOfLastLane * 1.00001 < lengthOfCurrentLane:
+            break
         elif colorChangedOnce and not firstLaneReady:
             after[i][j] = 255
-
-for i in range(1, len(laneChange)-82):
-    print(f'{laneChange[i-1]} > {laneChange[i]*1.1}')
-    if laneChange[i-1] > laneChange[i]*1.1:
-        print("done")
-        after[i+80]=after[i+81]
-        laneChange[i - 1] = laneChange[i]
-    if laneChange[i]*1.2 < laneChange[i+1]:
-        after[i + 82] = after[i + 81]
-        laneChange[i + 1] = laneChange[i]
-
-
-"""# makes blue the second half of the road
-for i in range(81, after.shape[0] - 1):
-    counter = 0
-    for j in range(after.shape[1] - 1):
-        if after[i][j][0] == 0 and after[i][j][1] == 0 and after[i][j][2] == 255:
-            counter += 1
-        elif counter > 0:
-            idx = round(j - 1 / counter / 2)
-            after[i][idx][0] = 255
-            after[i][idx][2] = 0
-            after[i][idx-1][0] = 255
-            after[i][idx-1][2] = 0
-            after[i][idx + 1][0] = 255
-            after[i][idx + 1][2] = 0"""
-
+            lengthOfCurrentLane += 1
 
 cv2.imshow("after", after)
 
