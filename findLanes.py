@@ -40,8 +40,9 @@ x, y, w, h = cv2.boundingRect(twoLargestContours[1])
 cv2.drawContours(close, twoLargestContours[1], -1, (255, 0, 0), 1)
 cv2.rectangle(close, (x, y), (x+w, y+h), (0, 255, 0), 1)
 
-segmentedLanes = cv2.cvtColor(close, cv2.COLOR_GRAY2BGRA)
+segmentedLanes = close.copy()
 
+# mark the lanes without separation
 for i in range(81, close.shape[0] - 1):
     afterFistContour = False
     contourCounter = 0
@@ -50,16 +51,12 @@ for i in range(81, close.shape[0] - 1):
             afterFistContour = True
             contourCounter += 1
         elif close[i][j] == 0 and afterFistContour and contourCounter < 3:
-            segmentedLanes[i][j][0] = 0
-            segmentedLanes[i][j][1] = 0
-            segmentedLanes[i][j][2] = 255
+            segmentedLanes[i][j] = 76
             background[i][j][0] = 0
             background[i][j][1] = 0
             background[i][j][2] = 255
-        elif segmentedLanes[i - 1][j][0] == 0 and segmentedLanes[i][j][1] == 0 and segmentedLanes[i - 1][j][2] == 255:
-            segmentedLanes[i][j][0] = 0
-            segmentedLanes[i][j][1] = 0
-            segmentedLanes[i][j][2] = 255
+        elif segmentedLanes[i - 1][j] == 76 and segmentedLanes[i][j] == 0:
+            segmentedLanes[i][j] = 76
             background[i][j][0] = 0
             background[i][j][1] = 0
             background[i][j][2] = 255
@@ -67,17 +64,14 @@ for i in range(81, close.shape[0] - 1):
 # detected road on background image
 cv2.imshow("background", background)
 
-
+# make everything black except the lanes
 for i in range(81, segmentedLanes.shape[0] - 1):
     for j in range(segmentedLanes.shape[1] - 1):
-        if not(segmentedLanes[i][j][0] == 0 and segmentedLanes[i][j][1] == 0 and segmentedLanes[i][j][2] == 255):
-            segmentedLanes[i][j][0] = 0
-            segmentedLanes[i][j][1] = 0
-            segmentedLanes[i][j][2] = 0
+        if segmentedLanes[i][j] != 76:
+            segmentedLanes[i][j] = 0
 
 
-segmentedLanes = cv2.cvtColor(segmentedLanes, cv2.COLOR_BGR2GRAY)
-
+# find the first lane
 laneChange = []
 lengthOfLastLane = 0
 lengthOfCurrentLane = 0
