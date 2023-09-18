@@ -5,8 +5,8 @@ VIDEO_PATH = "random_motorway.mp4"
 
 video = cv2.VideoCapture(VIDEO_PATH)
 # Frames stores only two elements, two frames. The task is to get the differences, because those are the moving objects.
-# Every time we have to override the values in this array so the structure will always be the same: last frame and current frame.
-# Because of the vibration of the camera we have to make a threshold value which can avoid the False Positive detections.
+# Whenever we got a new frame we have to override the values in this array so the structure will always be the same: last frame and current frame.
+# Because of the vibration of the camera we have to make a threshold value which can avoid False Positive detections.
 frames = []
 
 for frameOI in range(40):
