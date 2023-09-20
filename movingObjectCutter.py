@@ -1,19 +1,23 @@
 import cv2
 import numpy as np
 
-VIDEO_PATH = "random_motorway.mp4"
+VIDEO_PATH = "test_video.mp4"
 
 video = cv2.VideoCapture(VIDEO_PATH)
+
 # Frames stores only two elements, two frames. The task is to get the differences, because those are the moving objects.
 # Whenever we got a new frame we have to override the values in this array so the structure will always be the same: last frame and current frame.
 # Because of the vibration of the camera we have to make a threshold value which can avoid False Positive detections.
 frames = []
 
-for frameOI in range(40):
+"""for frameOI in range(40):
+    video.set(cv2.CAP_PROP_POS_FRAMES, frameOI)"""
 
-    video.set(cv2.CAP_PROP_POS_FRAMES, frameOI)
+while True:
 
     ret, frame = video.read()
+    if not ret:
+        break
 
     x = 650 / frame.shape[0]
     y = x
@@ -34,15 +38,16 @@ for frameOI in range(40):
         ret, tframe = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         cv2.imshow("thresholded", tframe)
 
-        sample_frame = frames[1]
+        """sample_frame = frames[1]
         (cnts, _) = cv2.findContours(tframe.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         for cnt in cnts:
             x, y, w, h = cv2.boundingRect(cnt)
             if y > 200:  # Disregard item that are the top of the picture
                 cv2.rectangle(sample_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        cv2.imshow("sample_frame", sample_frame)
+        cv2.imshow("sample_frame", sample_frame)"""
 
-        cv2.waitKey(0)
+        if cv2.waitKey(1) == ord('q'):
+            break
 
         frames.pop(0)
         frames.append(frame)
