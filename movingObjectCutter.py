@@ -3,56 +3,66 @@ import numpy as np
 
 VIDEO_PATH = "test_video.mp4"
 
-video = cv2.VideoCapture(VIDEO_PATH)
+def movingObjectCutter():
+    cap = cv2.VideoCapture(VIDEO_PATH)
+    cap.set(cv2.CAP_PROP_FPS, 30)
 
-# Frames stores only two elements, two frames. The task is to get the differences, because those are the moving objects.
-# Whenever we got a new frame we have to override the values in this array so the structure will always be the same: last frame and current frame.
-# Because of the vibration of the camera we have to make a threshold value which can avoid False Positive detections.
-frames = []
+    # create a background object
+    backgroundObject = cv2.createBackgroundSubtractorMOG2(history=2)
+    kernel = np.ones((3, 3), np.uint8)
+    kernel2 = None
 
-"""for frameOI in range(40):
-    video.set(cv2.CAP_PROP_POS_FRAMES, frameOI)"""
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
 
-while True:
+        fgmask = backgroundObject.apply(frame)
+        _, fgmask = cv2.threshold(fgmask, 20, 255, cv2.THRESH_BINARY)
 
-    ret, frame = video.read()
-    if not ret:
-        break
+        fgmask = cv2.erode(fgmask, kernel, iterations=1)
+        fgmask = cv2.medianBlur(fgmask, 5)
+        fgmask = cv2.dilate(fgmask, kernel2, iterations=6)
 
-    x = 650 / frame.shape[0]
-    y = x
-    frame = cv2.resize(frame, None, None, x, y, cv2.INTER_CUBIC)
-    cv2.imshow("frame", frame)
+        # contour detection
+        contours, _ = cv2.findContours(fgmask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    difference = np.copy(frame)
+        frameCopy = frame.copy()
 
-    if len(frames) == 0 or len(frames) == 1:
-        frames.append(frame)
-    elif len(frames) == 2:
-        cv2.absdiff(frames[0], frames[1], difference)
+        # loop inside the contour and search for bigger ones
 
-        blurred = cv2.GaussianBlur(difference, (11, 11), 0)
+        objects = []
 
-        blurred = cv2.cvtColor(blurred, cv2.COLOR_BGR2GRAY)
+        for cnt in contours:
+            # get the area coordinates
+            x, y, width, height = cv2.boundingRect(cnt)
 
-        ret, tframe = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        cv2.imshow("thresholded", tframe)
+            # 600 is enough to avoid False Positive detections with trucks but not too high to miss cars
+            if cv2.contourArea(cnt) > 60000 and height > 600:
 
-        """sample_frame = frames[1]
-        (cnts, _) = cv2.findContours(tframe.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        for cnt in cnts:
-            x, y, w, h = cv2.boundingRect(cnt)
-            if y > 200:  # Disregard item that are the top of the picture
-                cv2.rectangle(sample_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        cv2.imshow("sample_frame", sample_frame)"""
+                # draw a rectangle around the area
+                cv2.rectangle(frameCopy, (x,y), (x+width, y+height), (0, 0, 255), 2)
+
+                objects.append(frameCopy[y:y+height, x:x+width])
+
+                # here we can call the object classifier function in parameter with the appended object
+
+
+        x = 950 / frame.shape[0]
+        y = x
+        fgmask = cv2.resize(fgmask, None, None, x, y, cv2.INTER_CUBIC)
+        frameCopy = cv2.resize(frameCopy, None, None, x, y, cv2.INTER_CUBIC)
+
+        cv2.imshow("frameCopy", frameCopy)
+        cv2.imshow("fgmask", fgmask)
+
 
         if cv2.waitKey(1) == ord('q'):
             break
 
-        frames.pop(0)
-        frames.append(frame)
-    else:
-        raise Exception("Internal logic error")
+    cap.release()
+    cv2.destroyAllWindows()
 
-video.release()
-cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    movingObjectCutter()
