@@ -16,6 +16,7 @@ cv2.fillConvexPoly(stencil, polygon, 1)
 
 # using mask on the background image
 masked = cv2.bitwise_and(background[:, :, 0], background[:, :, 0], mask=stencil)
+
 # image thresholding to filter white colors from the grayscale image
 ret, thresh = cv2.threshold(masked, 130, 145, cv2.THRESH_BINARY)
 
