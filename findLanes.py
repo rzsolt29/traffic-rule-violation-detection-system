@@ -1,16 +1,21 @@
 import cv2
 import numpy as np
+import math
 
 background = cv2.imread("result_pictures/newVideoSource/blured.png")
+imgHeight = background.shape[0]
+imgWidth = background.shape[1]
 
 # polygon creation for masking
 stencil = np.zeros_like(background[:, :, 0])
-polygon = np.array([[80, 80], [250, 80], [500, 650], [-100, 650]])
+polygon = np.array([[int(imgWidth//4.57), int(imgHeight//8.125)],
+                    [int(imgWidth//1.464), int(imgHeight//8.125)],
+                    [int(math.floor(imgWidth*1.366)), int(imgHeight)],
+                    [int(math.floor(imgWidth//-3.66)), int(imgHeight)]])
 cv2.fillConvexPoly(stencil, polygon, 1)
 
 # using mask on the background image
 masked = cv2.bitwise_and(background[:, :, 0], background[:, :, 0], mask=stencil)
-
 # image thresholding to filter white colors from the grayscale image
 ret, thresh = cv2.threshold(masked, 130, 145, cv2.THRESH_BINARY)
 
