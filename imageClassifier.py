@@ -1,8 +1,12 @@
-import torch
 import os
+import numpy as np
+import cv2
+import torch
 import pandas as pd
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from sklearn.model_selection import train_test_split
+
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -37,10 +41,15 @@ def generate_train_df(anno_path):
         anno['width'] = root.find("./size/width").text
         anno['height'] = root.find("./size/height").text
         anno['class'] = root.find("./object/name").text
-        anno['xmin'] = int(root.find("./object/bndbox/xmin").text)
-        anno['ymin'] = int(root.find("./object/bndbox/ymin").text)
-        anno['xmax'] = int(root.find("./object/bndbox/xmax").text)
-        anno['ymax'] = int(root.find("./object/bndbox/ymax").text)
+        left_col = int(root.find("./object/bndbox/xmin").text)
+        anno['xmin'] = left_col
+        bottom_row = int(root.find("./object/bndbox/ymin").text)
+        anno['ymin'] = bottom_row
+        right_col = int(root.find("./object/bndbox/xmax").text)
+        anno['xmax'] = right_col
+        top_row = int(root.find("./object/bndbox/ymax").text)
+        anno['ymax'] = top_row
+        anno['bb'] = np.array([left_col, top_row, right_col, bottom_row], dtype=np.float32)
 
         if anno['class'] == "car_front" or anno['class'] == "truck_front":
             anno_list.append(anno)
@@ -55,5 +64,11 @@ df_train = generate_train_df(anno_path)
 class_dict = {'car_front': 0, 'truck_front': 1}
 df_train['class'] = df_train['class'].apply(lambda x: class_dict[x])
 
+df_train = df_train.reset_index()
+X = df_train[['filename', 'bb']]
+Y = df_train['class']
+
+# creating training and validation dataset
+X_train, X_val, y_train, y_val = train_test_split(X, Y, test_size=0.2, random_state=42)
 
 # CNN model
