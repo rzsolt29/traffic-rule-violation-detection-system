@@ -64,8 +64,19 @@ df_train = generate_train_df(anno_path)
 class_dict = {'car_front': 0, 'truck_front': 1}
 df_train['class'] = df_train['class'].apply(lambda x: class_dict[x])
 
+train_path_resized = Path(r'D:\Dev\Szakdoga\traffic-rule-violation-detection-system\dataset\images_resized')
+
+#for i in df_train.index:
+for i in range(0, 5):  # for test purposes we don't use the whole dataset
+    img = cv2.imread(str(df_train['filename'][i]))
+    cropped = img[int(df_train['ymin'][i]):int(df_train['ymax'][i]), int(df_train['xmin'][i]):int(df_train['xmax'][i])]
+    resized = cv2.resize(cropped, (256, 256), interpolation=cv2.INTER_AREA)
+    cv2.imwrite(os.path.join(train_path_resized, str(df_train['filename'][i])[40:]), resized)
+    df_train['filename'][i] = os.path.join(train_path_resized, str(df_train['filename'][i])[40:])
+
 df_train = df_train.reset_index()
-X = df_train[['filename', 'bb']]
+
+X = df_train['filename']
 Y = df_train['class']
 
 # creating training and validation dataset
