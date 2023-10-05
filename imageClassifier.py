@@ -16,7 +16,7 @@ training_epochs = 15
 batch_size = 100
 
 # dataset loader
-# Get the list of all files and directories
+# get the list of all files and directories
 images_path = Path(r'D:\Dev\Szakdoga\datasets\training-1\jpg')
 anno_path = Path(r'D:\Dev\Szakdoga\datasets\training-1\xml')
 
@@ -49,5 +49,11 @@ def generate_train_df(anno_path):
 
 
 df_train = generate_train_df(anno_path)
+
+
+# label encode target
+class_dict = {'car_front': 0, 'truck_front': 1}
+df_train['class'] = df_train['class'].apply(lambda x: class_dict[x])
+
 
 # CNN model
