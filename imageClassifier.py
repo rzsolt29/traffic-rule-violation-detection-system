@@ -1,23 +1,16 @@
 import os
 import numpy as np
 import cv2
-import torch
 import pandas as pd
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from sklearn.model_selection import train_test_split
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torchvision
+import torchvision.transforms as transforms
 
-
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-torch.manual_seed(777)
-if device == 'cuda':
-    torch.cuda.manual_seed_all(777)
-
-# parameters
-learning_rate = 0.001
-training_epochs = 15
-batch_size = 100
 
 # dataset loader
 # get the list of all files and directories
@@ -82,4 +75,33 @@ Y = df_train['class']
 # creating training and validation dataset
 X_train, X_val, y_train, y_val = train_test_split(X, Y, test_size=0.2, random_state=42)
 
+
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+torch.manual_seed(777)
+if device == 'cuda':
+    torch.cuda.manual_seed_all(777)
+
+# parameters
+number_epochs = 15
+batch_size = 100
+learning_rate = 0.001
+
+
 # CNN model
+class ConvNet(nn.Module):
+    def __init__(self):
+        super(ConvNet, self).__init__()
+        #TODO
+
+    def forward(self, x):
+        #TODO
+        return x
+
+
+model = ConvNet().to(device)
+
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+
+n_total_steps = len(X_train)
