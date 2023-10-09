@@ -7,3 +7,4 @@ tests.py
 output.mp4
 /.idea/
 /test_video.mp4
+/dataset/
