@@ -58,15 +58,26 @@ df_train = generate_train_df(anno_path)
 class_dict = {'car_front': 0, 'truck_front': 1}
 df_train['class'] = df_train['class'].apply(lambda x: class_dict[x])
 
+# image crop and resize
 train_path_resized = Path(r'D:\Dev\Szakdoga\traffic-rule-violation-detection-system\dataset\images_resized')
+newImgHeight = 256
+newImgWidth = 256
 
-#for i in df_train.index:
-for i in range(0, 8):  # for test purposes we don't use the whole dataset
+# run this block of code to change size of the training images
+"""for i in df_train.index:
+#for i in range(0, 8):  # for test purposes we don't use the whole dataset
     img = cv2.imread(str(df_train['filename'][i]))
     cropped = img[int(df_train['ymin'][i]):int(df_train['ymax'][i]), int(df_train['xmin'][i]):int(df_train['xmax'][i])]
-    resized = cv2.resize(cropped, (256, 256), interpolation=cv2.INTER_AREA)
+    resized = cv2.resize(cropped, (newImgWidth, newImgHeight), interpolation=cv2.INTER_AREA)
     cv2.imwrite(os.path.join(train_path_resized, str(df_train['filename'][i])[40:]), resized)
     df_train.at[i, 'filename'] = os.path.join(train_path_resized, str(df_train['filename'][i])[40:])
+    df_train.at[i, 'width'] = newImgWidth
+    df_train.at[i, 'height'] = newImgHeight"""
+
+for i in df_train.index:
+    df_train.at[i, 'filename'] = os.path.join(train_path_resized, str(df_train['filename'][i])[40:])
+    df_train.at[i, 'width'] = newImgWidth
+    df_train.at[i, 'height'] = newImgHeight
 
 df_train = df_train.reset_index()
 
@@ -106,8 +117,8 @@ class ToTensor:
         return torch.tensor(inputs), torch.tensor(targets)
 
 
-train_ds = CarTruckDataset(X_train,y_train, transform=ToTensor())
-valid_ds = CarTruckDataset(X_val,y_val)
+train_ds = CarTruckDataset(X_train, y_train, transform=ToTensor())
+valid_ds = CarTruckDataset(X_val, y_val)
 
 train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
 valid_dl = DataLoader(valid_ds, batch_size=batch_size)
@@ -142,6 +153,21 @@ n_total_steps = len(X_train)
 
 for epoch in range(number_epochs):
     for i, (images, labels) in enumerate(train_dl):
-        print(i)
-        print(images)
-        print(labels)
+        # original shape of images: (75, 256, 256, 3)
+
+        images = images.to(device)
+        labels = labels.to(device)
+
+        # Forward pass
+        outputs = model(images)
+        loss = criterion(outputs, labels)
+
+        # Backward and optimize
+        #optimizer.zero_grad()
+        loss.backward()
+        #optimizer.step()
+
+        if (i + 1) % 2000 == 0:
+            print(f'Epoch [{epoch + 1}/{number_epochs}], Step [{i + 1}/{n_total_steps}], Loss: {loss.item():.4f}')
+
+print('Finished Training')
