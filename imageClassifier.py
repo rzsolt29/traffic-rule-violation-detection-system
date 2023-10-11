@@ -7,6 +7,7 @@ from pathlib import Path
 from sklearn.model_selection import train_test_split
 import torch
 import torch.nn as nn
+from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
 import torchvision
 import torchvision.transforms as transforms
@@ -75,17 +76,50 @@ Y = df_train['class']
 # creating training and validation dataset
 X_train, X_val, y_train, y_val = train_test_split(X, Y, test_size=0.2, random_state=42)
 
+# parameters
+number_epochs = 15
+batch_size = 75
+learning_rate = 0.001
+
+
+class CarTruckDataset(Dataset):
+    def __init__(self, paths, y, transform=None):
+        self.paths = paths.values
+        self.y = y.values
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.paths)
+
+    def __getitem__(self, idx):
+        sample = cv2.imread(str(self.paths[idx])), self.y[idx]
+
+        if self.transform:
+            sample = self.transform(sample)
+
+        return sample
+
+
+class ToTensor:
+    def __call__(self, sample):
+        inputs, targets = sample
+        return torch.tensor(inputs), torch.tensor(targets)
+
+
+train_ds = CarTruckDataset(X_train,y_train, transform=ToTensor())
+valid_ds = CarTruckDataset(X_val,y_val)
+
+train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+valid_dl = DataLoader(valid_ds, batch_size=batch_size)
+
+dataiter = iter(train_dl)
+images, labels = next(dataiter)
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 torch.manual_seed(777)
 if device == 'cuda':
     torch.cuda.manual_seed_all(777)
-
-# parameters
-number_epochs = 15
-batch_size = 100
-learning_rate = 0.001
 
 
 # CNN model
@@ -102,6 +136,12 @@ class ConvNet(nn.Module):
 model = ConvNet().to(device)
 
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+#optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
 n_total_steps = len(X_train)
+
+for epoch in range(number_epochs):
+    for i, (images, labels) in enumerate(train_dl):
+        print(i)
+        print(images)
+        print(labels)
