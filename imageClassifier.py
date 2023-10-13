@@ -90,7 +90,7 @@ X_train, X_val, y_train, y_val = train_test_split(X, Y, test_size=0.2, random_st
 
 # parameters
 number_epochs = 15
-batch_size = 75
+batch_size = 50
 learning_rate = 0.001
 
 
@@ -138,23 +138,30 @@ if device == 'cuda':
 class ConvNet(nn.Module):
     def __init__(self):
         super(ConvNet, self).__init__()
-        """self.conv1 = nn.Conv2d(3, 6, 5)
+        self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc2 = nn.Linear(84, 2)"""
-        #TODO
+        self.conv3 = nn.Conv2d(16, 32, 5)
+        self.fc1 = nn.Linear(32 * 28 * 28, 250)
+        self.fc2 = nn.Linear(250, 95)
+        self.fc3 = nn.Linear(95, 2)
 
     def forward(self, x):
-        #TODO
+        x = self.pool(F.relu(self.conv1(x)))
+        x = self.pool(F.relu(self.conv2(x)))
+        x = self.pool(F.relu(self.conv3(x)))
+        x = x.view(-1, 32*28*28)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+
         return x
 
 
 model = ConvNet().to(device)
 
 criterion = nn.CrossEntropyLoss()
-#optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
 n_total_steps = len(X_train)
 
@@ -170,11 +177,11 @@ for epoch in range(number_epochs):
         loss = criterion(outputs, labels)
 
         # Backward and optimize
-        #optimizer.zero_grad()
+        optimizer.zero_grad()
         loss.backward()
-        #optimizer.step()
+        optimizer.step()
 
-        if (i + 1) % 2000 == 0:
+        if (i + 1) % 20 == 0:
             print(f'Epoch [{epoch + 1}/{number_epochs}], Step [{i + 1}/{n_total_steps}], Loss: {loss.item():.4f}')
 
 print('Finished Training')
