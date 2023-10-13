@@ -90,8 +90,8 @@ X_train, X_val, y_train, y_val = train_test_split(X, Y, test_size=0.2, random_st
 
 # parameters
 number_epochs = 15
-batch_size = 50
-learning_rate = 0.001
+batch_size = 32
+learning_rate = 0.002
 
 
 class CarTruckDataset(Dataset):
@@ -118,7 +118,7 @@ transform = transforms.Compose(
 
 
 train_ds = CarTruckDataset(X_train, y_train, transform=transform)
-valid_ds = CarTruckDataset(X_val, y_val)
+valid_ds = CarTruckDataset(X_val, y_val, transform=transform)
 
 train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
 valid_dl = DataLoader(valid_ds, batch_size=batch_size)
@@ -163,7 +163,7 @@ model = ConvNet().to(device)
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
-n_total_steps = len(X_train)
+n_total_steps = len(train_dl)
 
 for epoch in range(number_epochs):
     for i, (images, labels) in enumerate(train_dl):
@@ -185,3 +185,33 @@ for epoch in range(number_epochs):
             print(f'Epoch [{epoch + 1}/{number_epochs}], Step [{i + 1}/{n_total_steps}], Loss: {loss.item():.4f}')
 
 print('Finished Training')
+
+with torch.no_grad():
+    n_correct = 0
+    n_samples = 0
+    n_class_correct = [0 for i in range(2)]
+    n_class_samples = [0 for i in range(2)]
+    for images, labels in valid_dl:
+        images = images.to(device)
+        labels = labels.to(device)
+        outputs = model(images)
+        # max returns (value ,index)
+        _, predicted = torch.max(outputs, 1)
+        n_samples += labels.size(0)
+        n_correct += (predicted == labels).sum().item()
+
+        for i in range(len(labels)):
+            label = labels[i]
+            pred = predicted[i]
+            if label == pred:
+                n_class_correct[label] += 1
+            n_class_samples[label] += 1
+
+    acc = 100.0 * n_correct / n_samples
+    print(f'Accuracy of the network: {acc} %')
+
+    classes = ('car', 'truck')
+
+    for i in range(2):
+        acc = 100.0 * n_class_correct[i] / n_class_samples[i]
+        print(f'Accuracy of {classes[i]}: {acc} %')
