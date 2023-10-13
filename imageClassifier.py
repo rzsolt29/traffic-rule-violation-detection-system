@@ -11,6 +11,7 @@ from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
 import torchvision
 import torchvision.transforms as transforms
+import matplotlib.pyplot as plt
 
 
 # dataset loader
@@ -103,28 +104,28 @@ class CarTruckDataset(Dataset):
         return len(self.paths)
 
     def __getitem__(self, idx):
-        sample = cv2.imread(str(self.paths[idx])), self.y[idx]
+        img = plt.imread(str(self.paths[idx])).copy()
 
         if self.transform:
-            sample = self.transform(sample)
+            img = self.transform(img)
 
-        return sample
-
-
-class ToTensor:
-    def __call__(self, sample):
-        inputs, targets = sample
-        return torch.tensor(inputs), torch.tensor(targets)
+        return img, self.y[idx]
 
 
-train_ds = CarTruckDataset(X_train, y_train, transform=ToTensor())
+transform = transforms.Compose(
+    [transforms.ToTensor(),
+     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
+
+train_ds = CarTruckDataset(X_train, y_train, transform=transform)
 valid_ds = CarTruckDataset(X_val, y_val)
 
 train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
 valid_dl = DataLoader(valid_ds, batch_size=batch_size)
 
-dataiter = iter(train_dl)
-images, labels = next(dataiter)
+# these two lines for test purposes
+"""dataiter = iter(train_dl)
+images, labels = next(dataiter)"""
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -137,6 +138,12 @@ if device == 'cuda':
 class ConvNet(nn.Module):
     def __init__(self):
         super(ConvNet, self).__init__()
+        """self.conv1 = nn.Conv2d(3, 6, 5)
+        self.pool = nn.MaxPool2d(2, 2)
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.fc1 = nn.Linear(, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc2 = nn.Linear(84, 2)"""
         #TODO
 
     def forward(self, x):
@@ -153,8 +160,8 @@ n_total_steps = len(X_train)
 
 for epoch in range(number_epochs):
     for i, (images, labels) in enumerate(train_dl):
-        # original shape of images: (75, 256, 256, 3)
 
+        # original shape of images: (75, 3, 256, 256)
         images = images.to(device)
         labels = labels.to(device)
 
