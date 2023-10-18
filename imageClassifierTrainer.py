@@ -9,7 +9,6 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
-import torchvision
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 
@@ -195,6 +194,7 @@ with torch.no_grad():
         images = images.to(device)
         labels = labels.to(device)
         outputs = model(images)
+
         # max returns (value ,index)
         _, predicted = torch.max(outputs, 1)
         n_samples += labels.size(0)
@@ -215,3 +215,8 @@ with torch.no_grad():
     for i in range(2):
         acc = 100.0 * n_class_correct[i] / n_class_samples[i]
         print(f'Accuracy of {classes[i]}: {acc} %')
+
+toSave = input("Do you want to save the model? (y/n)")
+if toSave == "y":
+    FILE = "model.pth"
+    torch.save(model.state_dict(), FILE)
