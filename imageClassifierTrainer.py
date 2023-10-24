@@ -15,8 +15,8 @@ import matplotlib.pyplot as plt
 
 # dataset loader
 # get the list of all files and directories
-images_path = Path(r'D:\Dev\Szakdoga\datasets\training-1\jpg')
-anno_path = Path(r'D:\Dev\Szakdoga\datasets\training-1\xml')
+image_paths = [Path(r'D:\Dev\Szakdoga\datasets\training-1\jpg'), Path(r'D:\Dev\Szakdoga\datasets\training-2\jpg')]
+anno_paths = [Path(r'D:\Dev\Szakdoga\datasets\training-1\xml'), Path(r'D:\Dev\Szakdoga\datasets\training-2\xml')]
 
 
 def filelist(root, file_type):
@@ -26,32 +26,36 @@ def filelist(root, file_type):
 
 
 def generate_train_df(anno_path):
-    annotations = filelist(anno_path, '.xml')
     anno_list = []
-    for anno_path in annotations:
-        root = ET.parse(anno_path).getroot()
-        anno = {}
-        anno['filename'] = Path(str(images_path) + '/' + root.find("./filename").text)
-        anno['width'] = root.find("./size/width").text
-        anno['height'] = root.find("./size/height").text
-        anno['class'] = root.find("./object/name").text
-        left_col = int(root.find("./object/bndbox/xmin").text)
-        anno['xmin'] = left_col
-        bottom_row = int(root.find("./object/bndbox/ymin").text)
-        anno['ymin'] = bottom_row
-        right_col = int(root.find("./object/bndbox/xmax").text)
-        anno['xmax'] = right_col
-        top_row = int(root.find("./object/bndbox/ymax").text)
-        anno['ymax'] = top_row
-        anno['bb'] = np.array([left_col, top_row, right_col, bottom_row], dtype=np.float32)
+    for i in range(len(anno_paths)):
+        annotations = filelist(anno_paths[i], '.xml')
+        for anno_path in annotations:
+            root = ET.parse(anno_path).getroot()
+            anno = {}
+            path = str(image_paths[i]) + '/' + root.find("./filename").text
+            if path[-8:len(path)] == ".jpg.jpg":
+                path = path[:-4]
+            anno['filename'] = Path(path)
+            anno['width'] = root.find("./size/width").text
+            anno['height'] = root.find("./size/height").text
+            anno['class'] = root.find("./object/name").text
+            left_col = int(root.find("./object/bndbox/xmin").text)
+            anno['xmin'] = left_col
+            bottom_row = int(root.find("./object/bndbox/ymin").text)
+            anno['ymin'] = bottom_row
+            right_col = int(root.find("./object/bndbox/xmax").text)
+            anno['xmax'] = right_col
+            top_row = int(root.find("./object/bndbox/ymax").text)
+            anno['ymax'] = top_row
+            anno['bb'] = np.array([left_col, top_row, right_col, bottom_row], dtype=np.float32)
 
-        if anno['class'] == "car_front" or anno['class'] == "truck_front":
-            anno_list.append(anno)
-
+            if (anno['class'] == "car_front" or anno['class'] == "truck_front") and \
+                    left_col > 0 and bottom_row > 0 and right_col > 0 and top_row > 0:
+                anno_list.append(anno)
     return pd.DataFrame(anno_list)
 
 
-df_train = generate_train_df(anno_path)
+df_train = generate_train_df(anno_paths)
 
 
 # label encode target
@@ -59,7 +63,7 @@ class_dict = {'car_front': 0, 'truck_front': 1}
 df_train['class'] = df_train['class'].apply(lambda x: class_dict[x])
 
 # image crop and resize
-train_path_resized = Path(r'D:\Dev\Szakdoga\traffic-rule-violation-detection-system\dataset\images_resized')
+train_path_resized = Path(r'D:\Dev\Szakdoga\traffic-rule-violation-detection-system\dataset\images_resized/256x256')
 newImgHeight = 256
 newImgWidth = 256
 
