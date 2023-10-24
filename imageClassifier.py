@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+import cv2
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -35,25 +35,29 @@ def image_classifier(image):
 
     criterion = nn.CrossEntropyLoss()
 
-    img = plt.imread(image)
+    imgToShow = image.copy()
 
     transform = transforms.Compose(
         [transforms.ToTensor(),
          transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-    img = transform(img)
+    image = transform(image)
 
     model.load_state_dict(torch.load(FILE, map_location=device))
 
     with torch.no_grad():
         model.eval()
-        result = model(img)
+        result = model(image)
         _, predicted = torch.max(result, 1)
 
     classes = ('car', 'truck')
 
     print(classes[predicted])
+    imgToShow = cv2.putText(imgToShow, classes[predicted], (30, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+    cv2.imshow("image", imgToShow)
+    cv2.waitKey(1)
 
 
 if __name__ == "__main__":
-    image_classifier("test.png")
+    img = cv2.imread("test.png")
+    image_classifier(img)
