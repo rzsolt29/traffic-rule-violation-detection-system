@@ -10,7 +10,6 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
 import torchvision.transforms as transforms
-import matplotlib.pyplot as plt
 
 
 # dataset loader
@@ -107,7 +106,7 @@ class CarTruckDataset(Dataset):
         return len(self.paths)
 
     def __getitem__(self, idx):
-        img = plt.imread(str(self.paths[idx])).copy()
+        img = cv2.imread(str(self.paths[idx]))
 
         if self.transform:
             img = self.transform(img)
@@ -184,7 +183,7 @@ for epoch in range(number_epochs):
         loss.backward()
         optimizer.step()
 
-        if (i + 1) % 20 == 0:
+        if (i + 1) % 100 == 0:
             print(f'Epoch [{epoch + 1}/{number_epochs}], Step [{i + 1}/{n_total_steps}], Loss: {loss.item():.4f}')
 
 print('Finished Training')
