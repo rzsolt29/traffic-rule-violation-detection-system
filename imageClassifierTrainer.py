@@ -16,6 +16,8 @@ import torchvision.transforms as transforms
 # get the list of all files and directories
 image_paths = [Path(r'D:\Dev\Szakdoga\datasets\training-1\jpg'), Path(r'D:\Dev\Szakdoga\datasets\training-2\jpg')]
 anno_paths = [Path(r'D:\Dev\Szakdoga\datasets\training-1\xml'), Path(r'D:\Dev\Szakdoga\datasets\training-2\xml')]
+own_image_paths = [Path(r'D:\Dev\Szakdoga\traffic-rule-violation-detection-system\own_dataset\car'),
+                   Path(r'D:\Dev\Szakdoga\traffic-rule-violation-detection-system\own_dataset\truck')]
 
 
 def filelist(root, file_type):
@@ -81,6 +83,28 @@ for i in df_train.index:
     df_train.at[i, 'filename'] = os.path.join(train_path_resized, str(df_train['filename'][i])[40:])
     df_train.at[i, 'width'] = newImgWidth
     df_train.at[i, 'height'] = newImgHeight
+
+# Concat own dataset with orientation dataset
+anno_list = []
+for i in range(len(own_image_paths)):
+    fileNames = filelist(own_image_paths[i], '.jpg')
+    for file_path in fileNames:
+        anno = {}
+        anno['filename'] = Path(file_path)
+        anno['width'] = 256
+        anno['height'] = 256
+        if file_path[68:71] == "car":
+            anno['class'] = 0
+        else:
+            anno['class'] = 1
+        anno['xmin'] = 0
+        anno['ymin'] = 0
+        anno['xmax'] = 0
+        anno['ymax'] = 0
+        anno['bb'] = np.array([0, 0, 0, 0], dtype=np.float32)
+        anno_list.append(anno)
+images = [df_train, pd.DataFrame(anno_list)]
+df_train = pd.concat(images, ignore_index=True)
 
 df_train = df_train.reset_index()
 
