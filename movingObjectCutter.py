@@ -1,14 +1,16 @@
 import cv2
 import numpy as np
+from imageClassifier import image_classifier
 
 VIDEO_PATH = "test_video.mp4"
 
-def movingObjectCutter():
+
+def moving_object_cutter():
     cap = cv2.VideoCapture(VIDEO_PATH)
     cap.set(cv2.CAP_PROP_FPS, 30)
 
     # create a background object
-    backgroundObject = cv2.createBackgroundSubtractorMOG2(history=2)
+    background_object = cv2.createBackgroundSubtractorMOG2(history=2)
     kernel = np.ones((3, 3), np.uint8)
     kernel2 = None
 
@@ -17,7 +19,7 @@ def movingObjectCutter():
         if not ret:
             break
 
-        fgmask = backgroundObject.apply(frame)
+        fgmask = background_object.apply(frame)
         _, fgmask = cv2.threshold(fgmask, 20, 255, cv2.THRESH_BINARY)
 
         fgmask = cv2.erode(fgmask, kernel, iterations=1)
@@ -30,9 +32,6 @@ def movingObjectCutter():
         frameCopy = frame.copy()
 
         # loop inside the contour and search for bigger ones
-
-        objects = []
-
         for cnt in contours:
             # get the area coordinates
             x, y, width, height = cv2.boundingRect(cnt)
@@ -40,22 +39,22 @@ def movingObjectCutter():
             # 600 is enough to avoid False Positive detections with trucks but not too high to miss cars
             if cv2.contourArea(cnt) > 60000 and height > 600:
 
-                # draw a rectangle around the area
-                cv2.rectangle(frameCopy, (x,y), (x+width, y+height), (0, 0, 255), 2)
+                # Following line draws a rectangle around the contour area. It's easier to test with this approach.
+                #cv2.rectangle(frameCopy, (x,y), (x+width, y+height), (0, 0, 255), 2)
 
-                objects.append(frameCopy[y:y+height, x:x+width])
+                img = frameCopy[y:y + height, x:x + width]
+                img = cv2.resize(img, (256, 256), interpolation=cv2.INTER_AREA)
 
-                # here we can call the object classifier function in parameter with the appended object
-
+                # here we can call the object classifier function
+                image_classifier(img)
 
         x = 950 / frame.shape[0]
         y = x
         fgmask = cv2.resize(fgmask, None, None, x, y, cv2.INTER_CUBIC)
         frameCopy = cv2.resize(frameCopy, None, None, x, y, cv2.INTER_CUBIC)
 
-        cv2.imshow("frameCopy", frameCopy)
-        cv2.imshow("fgmask", fgmask)
-
+        #cv2.imshow("frameCopy", frameCopy)
+        #cv2.imshow("fgmask", fgmask)
 
         if cv2.waitKey(1) == ord('q'):
             break
@@ -65,4 +64,4 @@ def movingObjectCutter():
 
 
 if __name__ == "__main__":
-    movingObjectCutter()
+    moving_object_cutter()
