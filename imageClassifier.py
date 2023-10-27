@@ -4,9 +4,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.transforms as transforms
 
+
 def image_classifier(image):
 
-    FILE = "model.pth"
+    file = "model.pth"
     device = torch.device('cpu')
 
     class ConvNet(nn.Module):
@@ -33,9 +34,7 @@ def image_classifier(image):
 
     model = ConvNet()
 
-    criterion = nn.CrossEntropyLoss()
-
-    imgToShow = image.copy()
+    img_to_show = image.copy()
 
     transform = transforms.Compose(
         [transforms.ToTensor(),
@@ -43,7 +42,7 @@ def image_classifier(image):
 
     image = transform(image)
 
-    model.load_state_dict(torch.load(FILE, map_location=device))
+    model.load_state_dict(torch.load(file, map_location=device))
 
     with torch.no_grad():
         model.eval()
@@ -52,10 +51,9 @@ def image_classifier(image):
 
     classes = ('car', 'truck')
 
-    print(classes[predicted])
-    imgToShow = cv2.putText(imgToShow, classes[predicted], (30, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-    cv2.imshow("image", imgToShow)
-    cv2.waitKey(1)
+    img_to_show = cv2.putText(img_to_show, classes[predicted], (30, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+    cv2.imshow("image", img_to_show)
+    cv2.waitKey(0)
 
 
 if __name__ == "__main__":
