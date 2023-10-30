@@ -1,12 +1,11 @@
 import cv2
 import numpy as np
 from imageClassifier import image_classifier
+from isObjectInInnerLane import is_object_in_inner_lane
 
-VIDEO_PATH = "test_video.mp4"
 
-
-def moving_object_cutter():
-    cap = cv2.VideoCapture(VIDEO_PATH)
+def moving_object_cutter(video_path, lanes):
+    cap = cv2.VideoCapture(video_path)
     cap.set(cv2.CAP_PROP_FPS, 30)
 
     # create a background object
@@ -45,16 +44,21 @@ def moving_object_cutter():
                 img = frameCopy[y:y + height, x:x + width]
                 img = cv2.resize(img, (256, 256), interpolation=cv2.INTER_AREA)
 
-                # here we can call the object classifier function
-                image_classifier(img)
+                is_truck = image_classifier(img)
 
-        x = 950 / frame.shape[0]
-        y = x
-        fgmask = cv2.resize(fgmask, None, None, x, y, cv2.INTER_CUBIC)
-        frameCopy = cv2.resize(frameCopy, None, None, x, y, cv2.INTER_CUBIC)
+                if is_truck:
+                    is_violation = is_object_in_inner_lane(y, height, x, width, lanes)
+                    if is_violation:
+                        # save data into database but make sure, it's on the bottom of the image, so it won't be detected again
+                        print("Violation")
 
-        #cv2.imshow("frameCopy", frameCopy)
-        #cv2.imshow("fgmask", fgmask)
+        # x = 950 / frame.shape[0]
+        # y = x
+        # fgmask = cv2.resize(fgmask, None, None, x, y, cv2.INTER_CUBIC)
+        # frameCopy = cv2.resize(frameCopy, None, None, x, y, cv2.INTER_CUBIC)
+
+        # cv2.imshow("frameCopy", frameCopy)
+        # cv2.imshow("fgmask", fgmask)
 
         if cv2.waitKey(1) == ord('q'):
             break
@@ -64,4 +68,6 @@ def moving_object_cutter():
 
 
 if __name__ == "__main__":
-    moving_object_cutter()
+    test_video_path = "test_video.mp4"
+    lanes = cv2.imread("result_pictures/newVideoSource/laneLocalization.png")
+    moving_object_cutter(test_video_path, lanes)
