@@ -70,7 +70,7 @@ def find_lanes(background):
                   background[i][j][2] = 255
 
     # detected road on background image
-    cv2.imshow("background", background)
+    # cv2.imshow("background", background)
 
     # make everything black except the lanes
     for i in range(81, segmentedLanes.shape[0] - 1):
@@ -102,7 +102,10 @@ def find_lanes(background):
                 segmentedLanes[i][j] = 255
                 lengthOfCurrentLane += 1
 
-    cv2.imshow("segmented lanes", segmentedLanes)
+    #cv2.imshow("segmented lanes", segmentedLanes)
+    x = 3840 / segmentedLanes.shape[0]
+    y = x
+    segmentedLanes = cv2.resize(segmentedLanes, None, None, x, y, cv2.INTER_CUBIC)
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()
@@ -110,8 +113,9 @@ def find_lanes(background):
 
 
 if __name__ == "__main__":
-    background = cv2.imread("result_pictures/newVideoSource/bluredFullSize.png")
+    background = cv2.imread("result_pictures/newVideoSource/grayscaleFullSize.png")
     x = 650 / background.shape[0]
     y = x
     background = cv2.resize(background, None, None, x, y, cv2.INTER_CUBIC)
+    background = cv2.GaussianBlur(background, (5, 5), 0)
     find_lanes(background)
