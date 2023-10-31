@@ -110,5 +110,8 @@ def find_lanes(background):
 
 
 if __name__ == "__main__":
-    background = cv2.imread("result_pictures/newVideoSource/blured.png")
+    background = cv2.imread("result_pictures/newVideoSource/bluredFullSize.png")
+    x = 650 / background.shape[0]
+    y = x
+    background = cv2.resize(background, None, None, x, y, cv2.INTER_CUBIC)
     find_lanes(background)
