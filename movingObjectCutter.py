@@ -1,10 +1,13 @@
 import cv2
 import numpy as np
+
+from database_operations.addViolation import add_violation
+from dto.measuringPlace import MeasuringPlace
 from imageClassifier import image_classifier
 from isObjectInInnerLane import is_object_in_inner_lane
 
 
-def moving_object_cutter(video_path, lanes):
+def moving_object_cutter(video_path, lanes, measuring_place):
     cap = cv2.VideoCapture(video_path)
     cap.set(cv2.CAP_PROP_FPS, 30)
 
@@ -50,7 +53,7 @@ def moving_object_cutter(video_path, lanes):
                     is_violation = is_object_in_inner_lane(y, height, x, width, lanes)
                     if is_violation:
                         # save data into database but make sure, it's on the bottom of the image, so it won't be detected again
-                        print("Violation")
+                        add_violation(frameCopy, measuring_place)
 
         # x = 950 / frame.shape[0]
         # y = x
@@ -70,4 +73,5 @@ def moving_object_cutter(video_path, lanes):
 if __name__ == "__main__":
     test_video_path = "test_video.mp4"
     lanes = cv2.imread("result_pictures/newVideoSource/laneLocalization.png")
-    moving_object_cutter(test_video_path, lanes)
+    measuring_place = MeasuringPlace("M44", 153, "Békéscsaba", 46.740207099204696, 20.818157445847874)
+    moving_object_cutter(test_video_path, lanes, measuring_place)

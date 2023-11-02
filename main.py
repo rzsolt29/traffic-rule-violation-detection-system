@@ -1,9 +1,21 @@
+from database_operations.createTable import create_table
+from dto.measuringPlace import MeasuringPlace
 from keepBackground import keep_background
 from findLanes import find_lanes
 from movingObjectCutter import moving_object_cutter
 
 VIDEO_PATH = "test_video.mp4"
 
+print("To start the program, give some necessary information about the control place")
+
+name_of_road = input("Name of the road: ")
+kilometric_point = input("Kilometric point: ")
+direction = input("Direction of measuring lanes: ")
+latitude = input("Geographic coordinates (latitude)")
+longitude = input("Geographic coordinates (longitude)")
+measuring_place = MeasuringPlace(name_of_road, kilometric_point, direction, latitude, longitude)
+
+create_table()
 background = keep_background(VIDEO_PATH)
 lanes = find_lanes(background)
-moving_object_cutter(VIDEO_PATH, lanes)
+moving_object_cutter(VIDEO_PATH, lanes, measuring_place)
