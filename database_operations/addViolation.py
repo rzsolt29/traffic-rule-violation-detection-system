@@ -12,7 +12,11 @@ def add_violation(image, measuring_place):
             dt = datetime.datetime.now()
             ts = datetime.datetime.timestamp(dt)
 
-            values = "'D\\kepek\\"+str(ts).replace(".", "")+".jpg', "+measuring_place.getValuesForDB()+", to_timestamp('"+str(dt.replace(microsecond=0))+"', 'yyyy-mm-dd hh24:mi:ss')"
+            img_path = "D:\\Dev\\Szakdoga\\traffic-rule-violation-detection-system\\violations\\"+str(ts).replace(".", "")+".jpg"
+
+            cv2.imwrite(img_path, image)
+
+            values = "'"+img_path+"', "+measuring_place.getValuesForDB()+", to_timestamp('"+str(dt.replace(microsecond=0))+"', 'yyyy-mm-dd hh24:mi:ss')"
             cur.execute("""
                         INSERT INTO illegal_overtakings (image_path, name_of_road, kilometric_point, direction, coordinates, time)
                         VALUES (
@@ -22,6 +26,6 @@ def add_violation(image, measuring_place):
 
 
 if __name__ == "__main__":
-    img = cv2.imread("traffic-rule-violation-detection-system/test_img.png")
+    img = cv2.imread("D:\\Dev\\Szakdoga\\traffic-rule-violation-detection-system\\test_img.png")
     measuring_place = MeasuringPlace("M44", 153, "Békéscsaba", 46.740207099204696, 20.818157445847874)
     add_violation(img, measuring_place)
