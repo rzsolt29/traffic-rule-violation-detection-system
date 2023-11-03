@@ -9,7 +9,10 @@ def add_violation(image, measuring_place):
     with psycopg.connect("host="+os.environ['HOST']+" port="+os.environ['PORT']+" dbname="+os.environ['DBNAME']+" user="+os.environ['USER']+" password="+os.environ['PASSWORD']) as conn:
         with conn.cursor() as cur:
 
-            values = "'D\\kepek\\1.jpg', "+measuring_place.getValuesForDB()+", to_timestamp('"+str(datetime.datetime.now().replace(microsecond=0))+"', 'yyyy-mm-dd hh24:mi:ss')"
+            dt = datetime.datetime.now()
+            ts = datetime.datetime.timestamp(dt)
+
+            values = "'D\\kepek\\"+str(ts).replace(".", "")+".jpg', "+measuring_place.getValuesForDB()+", to_timestamp('"+str(dt.replace(microsecond=0))+"', 'yyyy-mm-dd hh24:mi:ss')"
             cur.execute("""
                         INSERT INTO illegal_overtakings (image_path, name_of_road, kilometric_point, direction, coordinates, time)
                         VALUES (
