@@ -4,12 +4,15 @@ import math
 
 
 def find_lanes(background):
-
+    x = 650 / background.shape[0]
+    y = x
+    background = cv2.resize(background, None, None, x, y, cv2.INTER_CUBIC)
+    background = cv2.GaussianBlur(background, (5, 5), 0)
     imgHeight = background.shape[0]
     imgWidth = background.shape[1]
 
     # polygon creation for masking
-    stencil = np.zeros_like(background[:, :, 0])
+    stencil = np.zeros_like(background[:, :])
     polygon = np.array([[int(imgWidth//4.57), int(imgHeight//8.125)],
                         [int(imgWidth//1.464), int(imgHeight//8.125)],
                         [int(math.floor(imgWidth*1.366)), int(imgHeight)],
@@ -17,7 +20,7 @@ def find_lanes(background):
     cv2.fillConvexPoly(stencil, polygon, 1)
 
     # using mask on the background image
-    masked = cv2.bitwise_and(background[:, :, 0], background[:, :, 0], mask=stencil)
+    masked = cv2.bitwise_and(background[:, :], background[:, :], mask=stencil)
 
     # image thresholding to filter white colors from the grayscale image
     ret, thresh = cv2.threshold(masked, 130, 145, cv2.THRESH_BINARY)
@@ -54,23 +57,17 @@ def find_lanes(background):
     for i in range(81, close.shape[0] - 1):
         afterFistContour = False
         contourCounter = 0
+
         for j in range(close.shape[1] - 1):
             if close[i][j] == 255 and close[i][j+1] != 255:
                 afterFistContour = True
                 contourCounter += 1
+
             elif close[i][j] == 0 and afterFistContour and contourCounter < 3:
                   segmentedLanes[i][j] = 76
-                  background[i][j][0] = 0
-                  background[i][j][1] = 0
-                  background[i][j][2] = 255
+
             elif segmentedLanes[i - 1][j] == 76 and segmentedLanes[i][j] == 0:
                   segmentedLanes[i][j] = 76
-                  background[i][j][0] = 0
-                  background[i][j][1] = 0
-                  background[i][j][2] = 255
-
-    # detected road on background image
-    # cv2.imshow("background", background)
 
     # make everything black except the lanes
     for i in range(81, segmentedLanes.shape[0] - 1):
@@ -102,20 +99,14 @@ def find_lanes(background):
                 segmentedLanes[i][j] = 255
                 lengthOfCurrentLane += 1
 
-    #cv2.imshow("segmented lanes", segmentedLanes)
     x = 3840 / segmentedLanes.shape[0]
     y = x
     segmentedLanes = cv2.resize(segmentedLanes, None, None, x, y, cv2.INTER_CUBIC)
 
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
     return segmentedLanes
 
 
 if __name__ == "__main__":
     background = cv2.imread("result_pictures/newVideoSource/grayscaleFullSize.png")
-    x = 650 / background.shape[0]
-    y = x
-    background = cv2.resize(background, None, None, x, y, cv2.INTER_CUBIC)
-    background = cv2.GaussianBlur(background, (5, 5), 0)
+    background = background[:, :, 0]
     find_lanes(background)

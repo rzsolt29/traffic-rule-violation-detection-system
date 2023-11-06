@@ -16,13 +16,13 @@ def keep_background(video_path):
 
     median = np.median(frames, axis=0).astype(dtype=np.uint8)
 
-    cv2.imwrite("result_pictures/newVideoSource/background.png", median)
+    #cv2.imwrite("result_pictures/newVideoSource/background.png", median)
 
     gray = cv2.cvtColor(median, cv2.COLOR_BGR2GRAY)
-    cv2.imwrite("result_pictures/newVideoSource/grayscale.png", gray)
+    #cv2.imwrite("result_pictures/newVideoSource/grayscale.png", gray)
 
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    cv2.imwrite("result_pictures/newVideoSource/blured.png", blur)
+    #cv2.imwrite("result_pictures/newVideoSource/blured.png", blur)
 
     return blur
 

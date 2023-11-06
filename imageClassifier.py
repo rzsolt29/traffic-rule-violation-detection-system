@@ -53,7 +53,6 @@ def image_classifier(image):
 
     img_to_show = cv2.putText(img_to_show, classes[predicted], (30, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
     cv2.imshow("image", img_to_show)
-    cv2.waitKey(0)
 
 
 if __name__ == "__main__":
