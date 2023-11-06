@@ -32,6 +32,7 @@ def moving_object_cutter(video_path, lanes, measuring_place):
         contours, _ = cv2.findContours(fgmask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         frameCopy = frame.copy()
+        imgArea = fgmask.shape[0] * fgmask.shape[1]
 
         # loop inside the contour and search for bigger ones
         for cnt in contours:
@@ -39,7 +40,13 @@ def moving_object_cutter(video_path, lanes, measuring_place):
             x, y, width, height = cv2.boundingRect(cnt)
 
             # 600 is enough to avoid False Positive detections with trucks but not too high to miss cars
-            if cv2.contourArea(cnt) > 60000 and height > 600:
+            # for the y+height > int(fgmask.shape[0]//Y1) and
+            # y+height > int(fgmask.shape[0]//Y2) constraints,
+            # the Y1 is 1.2 when the camera is above the inner lane
+            # but when it's above the outer lane the Y1 is 1.83,
+            # because the inner lane is cropped much higher
+            # Y1 is 1.037 and for inner lane: 1.6
+            if cv2.contourArea(cnt) > imgArea//138.24 and height > fgmask.shape[0]//7.68 and y+height > fgmask.shape[0]//1.83 and y+height < fgmask.shape[0]//1.6:
 
                 # Following line draws a rectangle around the contour area. It's easier to test with this approach.
                 #cv2.rectangle(frameCopy, (x,y), (x+width, y+height), (0, 0, 255), 2)
