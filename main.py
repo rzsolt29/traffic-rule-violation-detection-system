@@ -1,10 +1,15 @@
+import sys
+
 from database_operations.createTable import create_table
 from dto.measuringPlace import MeasuringPlace
 from keepBackground import keep_background
 from findLanes import find_lanes
 from movingObjectCutter import moving_object_cutter
 
-VIDEO_PATH = "test_video.mp4"
+if len(sys.argv) == 2:
+    VIDEO_PATH = sys.argv[1]
+else:
+    VIDEO_PATH = 0
 
 print("To start the program, give some necessary information about the control place")
 
@@ -16,6 +21,21 @@ longitude = input("Geographic coordinates (longitude)")
 measuring_place = MeasuringPlace(name_of_road, kilometric_point, direction, latitude, longitude)
 
 create_table()
-background = keep_background(VIDEO_PATH)
+print("Database table created")
+
+try:
+    background = keep_background(VIDEO_PATH)
+except BaseException:
+    print("Cannot open camera. Camera index out of range")
+    exit()
+
+print("Background created")
+
 lanes = find_lanes(background)
-moving_object_cutter(VIDEO_PATH, lanes, measuring_place)
+print("Lanes found")
+
+try:
+    moving_object_cutter(VIDEO_PATH, lanes, measuring_place)
+except BaseException:
+    print("Cannot open camera. Camera index out of range")
+    exit()

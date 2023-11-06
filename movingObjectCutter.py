@@ -21,6 +21,9 @@ def moving_object_cutter(video_path, lanes, measuring_place):
         if not ret:
             break
 
+        if isinstance(video_path, int):
+            frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
+
         fgmask = background_object.apply(frame)
         _, fgmask = cv2.threshold(fgmask, 20, 255, cv2.THRESH_BINARY)
 

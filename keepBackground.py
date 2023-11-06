@@ -4,12 +4,15 @@ import numpy as np
 
 def keep_background(video_path):
 
-    video = cv2.VideoCapture(video_path)
+    cap = cv2.VideoCapture(video_path)
     frames = []
 
     for frameOI in range(700):
-        video.set(cv2.CAP_PROP_POS_FRAMES, frameOI)
-        ret, frame = video.read()
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frameOI)
+        ret, frame = cap.read()
+
+        if isinstance(video_path, int):
+            frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
         if frameOI % 6 == 0:
             frames.append(frame)
@@ -24,6 +27,7 @@ def keep_background(video_path):
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
     #cv2.imwrite("result_pictures/newVideoSource/blured.png", blur)
 
+    cap.release()
     return blur
 
 
