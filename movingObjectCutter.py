@@ -1,3 +1,4 @@
+import datetime
 import cv2
 import numpy as np
 
@@ -16,7 +17,7 @@ def moving_object_cutter(video_path, lanes, measuring_place):
     kernel = np.ones((3, 3), np.uint8)
     kernel2 = None
 
-    while True:
+    while 6 < datetime.datetime.now().hour < 22:
         ret, frame = cap.read()
         if not ret:
             break

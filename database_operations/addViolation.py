@@ -10,6 +10,10 @@ def add_violation(image, measuring_place):
         with conn.cursor() as cur:
 
             dt = datetime.datetime.now()
+
+            if 6 > dt.hour > 22:
+                return
+
             ts = datetime.datetime.timestamp(dt)
 
             img_path = "D:\\Dev\\Szakdoga\\traffic-rule-violation-detection-system\\violations\\"+str(ts).replace(".", "")+".jpg"

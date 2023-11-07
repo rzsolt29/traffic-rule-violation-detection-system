@@ -1,4 +1,6 @@
 import sys
+import datetime
+import time
 
 from database_operations.createTable import create_table
 from dto.measuringPlace import MeasuringPlace
@@ -34,8 +36,13 @@ print("Background created")
 lanes = find_lanes(background)
 print("Lanes found")
 
-try:
-    moving_object_cutter(VIDEO_PATH, lanes, measuring_place)
-except BaseException:
-    print("Cannot open camera. Camera index out of range")
-    exit()
+while True:
+    if 6 < datetime.datetime.now().hour < 22:
+        try:
+            moving_object_cutter(VIDEO_PATH, lanes, measuring_place)
+        except BaseException:
+            print("Cannot open camera. Camera index out of range")
+            exit()
+    else:
+        time.sleep(120)
+        continue
