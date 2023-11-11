@@ -14,7 +14,7 @@ def create_table():
                     kilometric_point INT,
                     direction VARCHAR(100),
                     coordinates POINT,
-                    time TIMESTAMP)
+                    time TIMESTAMP NOT NULL)
                 """)
 
             conn.commit()
