@@ -11,7 +11,7 @@ def keep_background(video_path):
         cap.set(cv2.CAP_PROP_POS_FRAMES, frameOI)
         ret, frame = cap.read()
 
-        if isinstance(video_path, int):
+        if isinstance(video_path, int) and frame.shape[0] < frame.shape[1]:
             frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
         if frameOI % 6 == 0:
