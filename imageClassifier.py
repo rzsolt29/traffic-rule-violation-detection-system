@@ -8,7 +8,7 @@ import torchvision.transforms as transforms
 def image_classifier(image):
 
     file = "model.pth"
-    device = torch.device('cpu')
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     class ConvNet(nn.Module):
         def __init__(self):
@@ -32,7 +32,7 @@ def image_classifier(image):
 
             return x
 
-    model = ConvNet()
+    model = ConvNet().to(device)
 
     img_to_show = image.copy()
 
@@ -41,6 +41,7 @@ def image_classifier(image):
          transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
     image = transform(image)
+    image = image.to(device)
 
     model.load_state_dict(torch.load(file, map_location=device))
 
