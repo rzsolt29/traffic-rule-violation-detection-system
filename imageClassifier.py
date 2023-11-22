@@ -51,10 +51,13 @@ def image_classifier(image):
 
     classes = ('car', 'truck')
 
-    img_to_show = cv2.putText(img_to_show, classes[predicted], (30, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-    cv2.imshow("image", img_to_show)
+    # for testing
+    # img_to_show = cv2.putText(img_to_show, classes[predicted], (30, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+    # cv2.imshow("image", img_to_show)
+
+    return classes[predicted] == 'truck'
 
 
 if __name__ == "__main__":
-    img = cv2.imread("test.png")
-    image_classifier(img)
+    img = cv2.imread("own_dataset/car/1.jpg")
+    print(image_classifier(img))
