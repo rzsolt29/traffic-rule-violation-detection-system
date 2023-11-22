@@ -83,6 +83,7 @@ def moving_object_cutter(video_path, lanes, measuring_place):
 
 if __name__ == "__main__":
     test_video_path = "test_video.mp4"
-    lanes = cv2.imread("result_pictures/newVideoSource/laneLocalization.png")
+    lanes = cv2.imread("result_pictures/newVideoSource/laneLocalizationFullSize.png")
+    lanes = lanes[:, :, 0]
     measuring_place = MeasuringPlace("M44", 153, "Békéscsaba", 46.740207099204696, 20.818157445847874)
     moving_object_cutter(test_video_path, lanes, measuring_place)
